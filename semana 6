@@ -1,0 +1,80 @@
+Atividade de registro Semana 6 - Banco de Dados
+
+Situação:
+Sistema da cantina escolar
+Tabelas:
+alunos
+produtos
+compras
+
+📌 Desafios:
+1️- DELETE
+Apague um produto com estoque 0
+
+DELETE FROM produtos
+WHERE estoque = 0;
+
+
+2️- JOIN
+Mostre:
+nome do aluno
+produto comprado
+
+SELECT a.nome AS nome_aluno, p.nome AS produto_comprado
+FROM compras c
+JOIN alunos a ON c.aluno_id = a.id
+JOIN produtos p ON c.produto_id = p.id;
+
+
+3️- SUBQUERY
+Liste alunos que compraram mais de 1 produto
+
+SELECT nome
+FROM alunos
+WHERE id IN (
+    SELECT aluno_id
+    FROM compras
+    GROUP BY aluno_id
+    HAVING COUNT(produto_id) > 1
+);
+
+
+4️- VIEW
+Crie uma view chamada:
+compras_alunos
+
+CREATE VIEW compras_alunos AS
+SELECT a.nome AS nome_aluno, p.nome AS produto_comprado
+FROM compras c
+JOIN alunos a ON c.aluno_id = a.id
+JOIN produtos p ON c.produto_id = p.id;
+
+
+5️- ÍNDICE
+Crie índice no nome do aluno
+
+CREATE INDEX idx_nome_aluno ON alunos(nome);
+
+
+6- TRANSAÇÃO
+Simule uma compra:
+ - diminui estoque
+ - registra compra
+
+ BEGIN TRANSACTION;
+
+-- Decrease stock by 1
+UPDATE produtos
+SET estoque = estoque - 1
+WHERE id = :produto_id AND estoque > 0;
+
+-- Check if stock was decreased
+IF (SELECT estoque FROM produtos WHERE id = :produto_id) >= 0 THEN
+    -- Register purchase
+    INSERT INTO compras (aluno_id, produto_id)
+    VALUES (:aluno_id, :produto_id);
+    
+    COMMIT;
+ELSE
+    ROLLBACK;
+END IF;
